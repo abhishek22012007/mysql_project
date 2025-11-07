@@ -1,0 +1,455 @@
+CREATE DATABASE lucky_fruit_company;
+use lucky_fruit_company;
+
+CREATE TABLE Customers (
+    customer_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_name VARCHAR(255) NOT NULL,
+    total_purchase DECIMAL(10,2) DEFAULT 0
+);
+
+CREATE TABLE DailySales (
+    sales_id INT PRIMARY KEY AUTO_INCREMENT,
+    date DATE NOT NULL,
+    customer_id INT,
+    product_name VARCHAR(255),
+    quantity_sold_in_kg INT NOT NULL,
+    price_per_unit DECIMAL(10,2) NOT NULL,
+    total_amount DECIMAL(10,2) GENERATED ALWAYS AS (quantity_sold_in_kg* price_per_unit),
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id) ON DELETE SET NULL
+);
+
+CREATE TABLE Payments (
+    payment_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_id INT,
+    payment_date DATE NOT NULL,
+    amount_paid DECIMAL(10,2) NOT NULL,
+    payment_method ENUM('Cash', 'UPI', 'Bank Transfer') NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id) ON DELETE SET NULL
+);
+
+DELIMITER //
+
+CREATE TRIGGER update_total_purchase
+AFTER INSERT ON DailySales
+FOR EACH ROW
+BEGIN
+    UPDATE Customers 
+    SET total_purchase = (
+        SELECT COALESCE(SUM(total_amount), 0) 
+        FROM DailySales 
+        WHERE customer_id = NEW.customer_id
+    )
+    WHERE customer_id = NEW.customer_id;
+END;
+//
+
+DELIMITER ;
+
+ALTER TABLE DailySales 
+RENAME COLUMN price_per_unit TO price_per_kg;
+
+INSERT INTO DailySales (date, customer_id, product_name, quantity_sold_in_kg, price_per_unit) VALUES
+('2025-04-27', 22, 'laalbag', 89, 80),
+('2025-04-27', 22, 'badam', 85, 90),
+('2025-04-27', 22, 'kesar', 130, 110),
+('2025-04-27', 22, 'hapus', 100, 120),
+('2025-04-27', 15, 'hapus', 41, 115),
+('2025-04-27', 15, 'badam', 45, 90),
+('2025-04-27', 15, 'kesar', 30, 105),
+('2025-04-27', 6, 'badam', 20, 95),
+('2025-04-27', 6, 'laalbag', 20, 75),
+('2025-04-27', 6, 'hapus', 21, 110),
+('2025-04-27', 6, 'kesar', 20, 100),
+('2025-04-28', 45, 'badam', 160, 80),
+('2025-04-28', 50, 'badam', 40, 95),
+('2025-04-28', 50, 'hapus', 20, 115),
+('2025-04-28', 50, 'laalbag', 20, 85),
+('2025-04-28', 15, 'hapus', 100, 110),
+('2025-04-28', 58, 'laalbag', 20, 80),
+('2025-04-28', 58, 'kesar', 300, 100),
+('2025-04-28', 1, 'kesar', 40, 90),
+('2025-04-28', 1, 'laalbag', 20, 75),
+('2025-04-29', 49, 'badam', 85, 78),
+('2025-04-29', 49, 'laalbag', 100, 90),
+('2025-04-29', 61, 'badam', 50, 80),
+('2025-04-29', 61, 'laalbag', 40, 85),
+('2025-04-29', 61, 'hapus', 20, 110),
+('2025-04-30', 21, 'hapus', 100, 115),
+('2025-04-30', 21, 'kesar', 100, 105),
+('2025-04-30', 21, 'totapuri', 50, 60),
+('2025-04-30', 21, 'badam', 65, 75),
+('2025-04-30', 45, 'badam', 63, 70),
+('2025-04-30', 45, 'laalbag', 67, 80),
+('2025-04-30', 49, 'kesar', 355, 90),
+('2025-04-30', 49, 'kesar', 312, 110),
+('2025-05-01', 6, 'hapus', 22, 120),
+('2025-05-01', 6, 'kesar', 25, 100),
+('2025-05-01', 6, 'laalbag', 49, 75),
+('2025-05-01', 32, 'kesar', 56, 85);
+INSERT INTO DailySales (date, customer_id, product_name, quantity_sold_in_kg, price_per_unit) VALUES
+('2025-05-02', 54, 'kesar', 100, 105),
+('2025-05-02', 41, 'hapus', 50, 115),
+('2025-05-02', 9, 'badam', 75, 80),
+('2025-05-02', 13, 'laalbag', 60, 90),
+('2025-05-03', 31, 'totapuri', 40, 50),
+('2025-05-03', 35, 'kesar', 120, 110),
+('2025-05-03', 37, 'hapus', 90, 120),
+('2025-05-04', 39, 'badam', 50, 95),
+('2025-05-04', 42, 'laalbag', 70, 85),
+('2025-05-04', 51, 'kesar', 110, 100),
+('2025-05-05', 53, 'hapus', 45, 110),
+('2025-05-05', 36, 'badam', 85, 78),
+('2025-05-05', 5, 'totapuri', 30, 55),
+('2025-05-06', 18, 'kesar', 95, 115),
+('2025-05-06', 29, 'hapus', 65, 110),
+('2025-05-06', 17, 'laalbag', 90, 75),
+('2025-05-07', 23, 'badam', 70, 85),
+('2025-05-07', 25, 'kesar', 105, 100),
+('2025-05-07', 20, 'hapus', 80, 112),
+('2025-05-08', 30, 'laalbag', 55, 90),
+('2025-05-08', 38, 'badam', 95, 80),
+('2025-05-09', 40, 'totapuri', 20, 50),
+('2025-05-09', 34, 'kesar', 130, 115),
+('2025-05-09', 47, 'hapus', 60, 110),
+('2025-05-10', 26, 'badam', 85, 78),
+('2025-05-10', 24, 'laalbag', 75, 80),
+('2025-05-11', 28, 'kesar', 90, 120),
+('2025-05-11', 55, 'hapus', 40, 110),
+('2025-05-12', 57, 'badam', 80, 92),
+('2025-05-12', 59, 'laalbag', 95, 75),
+('2025-05-12', 43, 'totapuri', 25, 50);
+INSERT INTO DailySales (date, customer_id, product_name, quantity_sold_in_kg, price_per_unit) VALUES
+('2025-05-12', 54, 'kesar', 85, 105),
+('2025-05-12', 41, 'hapus', 50, 115),
+('2025-05-12', 9, 'badam', 75, 80),
+('2025-05-12', 13, 'laalbag', 60, 90),
+('2025-05-12', 31, 'totapuri', 40, 50),
+('2025-05-12', 35, 'kesar', 120, 110),
+('2025-05-12', 37, 'hapus', 90, 120),
+('2025-05-12', 39, 'badam', 50, 95),
+('2025-05-12', 42, 'laalbag', 70, 85),
+('2025-05-12', 51, 'kesar', 110, 100),
+('2025-05-12', 53, 'hapus', 45, 110),
+('2025-05-12', 36, 'badam', 85, 78),
+('2025-05-12', 5, 'totapuri', 30, 55),
+('2025-05-13', 18, 'kesar', 95, 115),
+('2025-05-13', 29, 'hapus', 65, 110),
+('2025-05-13', 17, 'laalbag', 90, 75),
+('2025-05-13', 23, 'badam', 70, 85),
+('2025-05-13', 25, 'kesar', 105, 100),
+('2025-05-13', 20, 'hapus', 80, 112),
+('2025-05-13', 30, 'laalbag', 55, 90),
+('2025-05-13', 38, 'badam', 95, 80),
+('2025-05-13', 40, 'totapuri', 20, 50),
+('2025-05-13', 34, 'kesar', 130, 115),
+('2025-05-13', 47, 'hapus', 60, 110),
+('2025-05-13', 26, 'badam', 85, 78),
+('2025-05-13', 24, 'laalbag', 75, 80),
+('2025-05-14', 28, 'kesar', 90, 120),
+('2025-05-14', 55, 'hapus', 40, 110),
+('2025-05-14', 57, 'badam', 80, 92),
+('2025-05-14', 59, 'laalbag', 95, 75),
+('2025-05-14', 43, 'totapuri', 25, 50);
+
+INSERT INTO DailySales (date, customer_id, product_name, quantity_sold_in_kg, price_per_unit) VALUES
+('2025-05-12', 54, 'kesar', 85, 105),
+('2025-05-12', 41, 'hapus', 50, 115),
+('2025-05-12', 9, 'badam', 75, 80),
+('2025-05-12', 13, 'laalbag', 60, 90),
+('2025-05-13', 31, 'totapuri', 40, 50),
+('2025-05-13', 35, 'kesar', 120, 110),
+('2025-05-13', 37, 'hapus', 90, 120),
+('2025-05-14', 39, 'badam', 50, 95),
+('2025-05-14', 42, 'laalbag', 70, 85),
+('2025-05-15', 51, 'kesar', 110, 100),
+('2025-05-15', 53, 'hapus', 45, 110),
+('2025-05-16', 36, 'badam', 85, 78),
+('2025-05-16', 5, 'totapuri', 30, 55),
+('2025-05-17', 18, 'kesar', 95, 115),
+('2025-05-17', 29, 'hapus', 65, 110),
+('2025-05-18', 17, 'laalbag', 90, 75),
+('2025-05-18', 23, 'badam', 70, 85),
+('2025-05-19', 25, 'kesar', 105, 100),
+('2025-05-19', 20, 'hapus', 80, 112),
+('2025-05-20', 30, 'laalbag', 55, 90),
+('2025-05-21', 38, 'badam', 95, 80),
+('2025-05-21', 40, 'totapuri', 20, 50),
+('2025-05-22', 34, 'kesar', 130, 115),
+('2025-05-23', 47, 'hapus', 60, 110),
+('2025-05-23', 26, 'badam', 85, 78),
+('2025-05-24', 24, 'laalbag', 75, 80),
+('2025-05-25', 28, 'kesar', 90, 120),
+('2025-05-26', 55, 'hapus', 40, 110),
+('2025-05-27', 57, 'badam', 80, 92),
+('2025-05-28', 59, 'laalbag', 95, 75),
+('2025-05-29', 43, 'totapuri', 25, 50),
+('2025-05-30', 29, 'badam', 65, 85),
+('2025-05-31', 11, 'kesar', 85, 110),
+('2025-05-31', 3, 'hapus', 50, 115);
+
+INSERT IGNORE INTO Customers (customer_id, customer_name) VALUES
+(22, 'Rajesh Yadav'),
+(15, 'Prakash Singh'),
+(6, 'Amit Kumar'),
+(45, 'Suresh Jha'),
+(50, 'Mahesh Pandey'),
+(58, 'Ramesh Thakur'),
+(1, 'Santosh Chavan'),
+(49, 'Ganesh Pawar'),
+(61, 'Deepak Patil'),
+(21, 'Arun Shinde'),
+(32, 'Vikas Gupta'),
+(54, 'Anil Sharma'),
+(41, 'Vivek Mishra'),
+(9, 'Manoj Tripathi'),
+(13, 'Sunil Verma'),
+(31, 'Rohit Saxena'),
+(35, 'Dinesh Kulkarni'),
+(37, 'Ravi Deshmukh'),
+(39, 'Ajay Tiwari'),
+(42, 'Harshad Joshi'),
+(51, 'Shashank Gaikwad'),
+(53, 'Pankaj Maurya'),
+(36, 'Sanjeev Chauhan'),
+(5, 'Sachin Vaidya'),
+(18, 'Mukesh Dubey'),
+(29, 'Vinay Shukla'),
+(17, 'Nilesh Shinde'),
+(23, 'Atul Chaturvedi'),
+(25, 'Suraj Bhandari'),
+(20, 'Ganesh Satpute'),
+(30, 'Sudhir Tambe'),
+(38, 'Abhay Jadhav'),
+(40, 'Yogesh Rathod'),
+(34, 'Ashok More'),
+(47, 'Narayan Patankar'),
+(26, 'Umesh Khandekar'),
+(24, 'Rahul Pawar'),
+(28, 'Ramesh Gaikwad'),
+(55, 'Vishal Deshmukh'),
+(57, 'Swapnil Mane'),
+(59, 'Chetan Patil'),
+(43, 'Sagar Waghmare'),
+(29, 'Rahul Singh'),
+(11, 'Harsh Gupta'),
+(3, 'Shivam Mishra'),
+(18, 'Manish Tiwari'),
+(44, 'Ashutosh Jha'),
+(66, 'Omkar Patil'),
+(65, 'Akash Shinde'),
+(64, 'Sandeep Kulkarni'),
+(63, 'Pranav Chaudhary'),
+(62, 'Sameer Yadav'),
+(89, 'Saurabh Pandey'),
+(90, 'Devendra Kumar'),
+(93, 'Vaibhav Tripathi'),
+(95, 'Bhushan Sharma'),
+(97, 'Nitin Verma'),
+(98, 'Aniket Shukla'),
+(99, 'Chinmay Jadhav'),
+(112, 'Deepak Khandelwal'),
+(145, 'Aakash Saxena'),
+(156, 'Tushar Joshi'),
+(154, 'Rohit Desai'),
+(134, 'Rajat Chauhan'),
+(135, 'Gopal Singh'),
+(123, 'Vivek Chaturvedi'),
+(134, 'Swapnil Gaikwad'),
+(49, 'Shrikant More');
+
+INSERT INTO Payments (customer_id, payment_date, amount_paid, payment_method) VALUES
+('22', '2025-05-12', 10500.00, 'UPI'),
+('22', '2025-05-12', 8900.00, 'Cash'),
+('22', '2025-05-13', 12000.00, 'UPI'),
+('15', '2025-05-12', 13500.00, 'Cash'),
+('15', '2025-05-12', 9200.00, 'UPI'),
+('15', '2025-05-13', 11000.00, 'Cash'),
+('6', '2025-05-12', 15000.00, 'UPI'),
+('6', '2025-05-13', 9900.00, 'Cash'),
+('6', '2025-05-13', 13200.00, 'UPI'),
+('45', '2025-05-12', 15200.00, 'Cash'),
+('45', '2025-05-13', 14500.00, 'UPI'),
+('50', '2025-05-12', 12500.00, 'UPI'),
+('50', '2025-05-13', 14100.00, 'Cash'),
+('58', '2025-05-12', 11900.00, 'UPI'),
+('58', '2025-05-14', 10800.00, 'Cash'),
+('1', '2025-05-12', 14500.00, 'UPI'),
+('1', '2025-05-14', 15000.00, 'Cash'),
+('49', '2025-05-12', 13400.00, 'UPI'),
+('49', '2025-05-14', 12500.00, 'Cash'),
+('61', '2025-05-12', 14000.00, 'UPI'),
+('61', '2025-05-15', 13500.00, 'Cash'),
+('21', '2025-05-12', 11800.00, 'Cash'),
+('21', '2025-05-16', 12300.00, 'UPI'),
+('32', '2025-05-12', 12900.00, 'Cash'),
+('32', '2025-05-14', 14000.00, 'UPI'),
+('54', '2025-05-12', 15100.00, 'Cash'),
+('54', '2025-05-18', 13800.00, 'UPI'),
+('41', '2025-05-12', 12400.00, 'Cash'),
+('41', '2025-05-19', 13600.00, 'UPI'),
+('9', '2025-05-12', 11900.00, 'Cash'),
+('9', '2025-05-17', 12500.00, 'UPI');
+INSERT INTO Payments (customer_id, payment_date, amount_paid, payment_method) VALUES
+('22', '2025-04-28', 12500.00, 'UPI'),
+('22', '2025-04-29', 9800.00, 'Cash'),
+('15', '2025-04-28', 13000.00, 'Cash'),
+('15', '2025-04-30', 9100.00, 'UPI'),
+('6', '2025-04-28', 14800.00, 'UPI'),
+('6', '2025-05-01', 10200.00, 'Cash'),
+('45', '2025-04-28', 15200.00, 'Cash'),
+('45', '2025-05-02', 14500.00, 'UPI'),
+('50', '2025-04-28', 12500.00, 'UPI'),
+('50', '2025-05-03', 14000.00, 'Cash'),
+('58', '2025-04-28', 13500.00, 'UPI'),
+('58', '2025-05-04', 12900.00, 'Cash'),
+('1', '2025-04-28', 14900.00, 'UPI'),
+('1', '2025-05-05', 14200.00, 'Cash'),
+('49', '2025-04-28', 13200.00, 'UPI'),
+('49', '2025-05-06', 11500.00, 'Cash'),
+('61', '2025-04-28', 14000.00, 'UPI'),
+('61', '2025-05-07', 13800.00, 'Cash'),
+('21', '2025-04-28', 12700.00, 'Cash'),
+('21', '2025-05-08', 12300.00, 'UPI'),
+('32', '2025-04-28', 13400.00, 'Cash'),
+('32', '2025-05-09', 14700.00, 'UPI'),
+('54', '2025-04-28', 15200.00, 'Cash'),
+('54', '2025-05-10', 13600.00, 'UPI'),
+('41', '2025-04-28', 12800.00, 'Cash'),
+('41', '2025-05-11', 13200.00, 'UPI'),
+('9', '2025-04-28', 13000.00, 'Cash'),
+('9', '2025-05-12', 12500.00, 'UPI');
+INSERT INTO Payments (customer_id, payment_date, amount_paid, payment_method) VALUES
+('66', '2025-05-20', 13500.00, 'Cash'),
+('66', '2025-05-21', 12900.00, 'UPI'),
+('65', '2025-05-20', 14200.00, 'UPI'),
+('65', '2025-05-22', 13200.00, 'Cash'),
+('64', '2025-05-21', 12700.00, 'Cash'),
+('64', '2025-05-23', 13800.00, 'UPI'),
+('63', '2025-05-22', 13300.00, 'UPI'),
+('63', '2025-05-24', 14400.00, 'Cash'),
+('62', '2025-05-23', 15000.00, 'Cash'),
+('62', '2025-05-25', 13600.00, 'UPI'),
+('89', '2025-05-24', 12800.00, 'Cash'),
+('89', '2025-05-26', 14900.00, 'UPI'),
+('90', '2025-05-25', 13700.00, 'UPI'),
+('90', '2025-05-27', 12200.00, 'Cash'),
+('93', '2025-05-26', 14000.00, 'UPI'),
+('93', '2025-05-28', 13400.00, 'Cash'),
+('95', '2025-05-27', 14800.00, 'Cash'),
+('95', '2025-05-29', 12900.00, 'UPI'),
+('97', '2025-05-28', 13200.00, 'Cash'),
+('97', '2025-05-30', 12500.00, 'UPI'),
+('98', '2025-05-29', 13500.00, 'Cash'),
+('98', '2025-05-31', 14200.00, 'UPI'),
+('99', '2025-05-30', 15000.00, 'Cash'),
+('99', '2025-05-31', 13600.00, 'UPI'),
+('112', '2025-05-31', 12800.00, 'Cash');
+INSERT INTO Payments (customer_id, payment_date, amount_paid, payment_method) VALUES
+('3', '2025-05-20', 17200.00, 'Cash'),
+('3', '2025-05-21', 15800.00, 'UPI'),
+('11', '2025-05-20', 14500.00, 'UPI'),
+('11', '2025-05-22', 13800.00, 'Cash'),
+('44', '2025-05-21', 12400.00, 'Cash'),
+('44', '2025-05-23', 12900.00, 'UPI'),
+('123', '2025-05-22', 13300.00, 'UPI'),
+('123', '2025-05-24', 14000.00, 'Cash'),
+('112', '2025-05-23', 15500.00, 'Cash'),
+('112', '2025-05-25', 14200.00, 'UPI'),
+('145', '2025-05-24', 15800.00, 'Cash'),
+('145', '2025-05-26', 16900.00, 'UPI'),
+('156', '2025-05-25', 16300.00, 'UPI'),
+('156', '2025-05-27', 13800.00, 'Cash'),
+('154', '2025-05-26', 14000.00, 'UPI'),
+('154', '2025-05-28', 13500.00, 'Cash'),
+('134', '2025-05-27', 16800.00, 'Cash'),
+('134', '2025-05-29', 15000.00, 'UPI'),
+('135', '2025-05-28', 13600.00, 'Cash'),
+('135', '2025-05-30', 12900.00, 'UPI');
+
+UPDATE Customers SET customer_name = 'Upendra Prasad' WHERE customer_id = 1;
+UPDATE Customers SET customer_name = 'Satbir Prasad' WHERE customer_id = 6;
+UPDATE Customers SET customer_name = 'Balwant Kuswaha' WHERE customer_id = 9;
+UPDATE Customers SET customer_name = 'Dharmendra Kushwaha' WHERE customer_id = 13;
+UPDATE Customers SET customer_name = 'Ashok Jaiswal' WHERE customer_id = 15;
+UPDATE Customers SET customer_name = 'Durgesh Prasad' WHERE customer_id = 18;
+UPDATE Customers SET customer_name = 'Antu Kushwaha' WHERE customer_id = 22;
+UPDATE Customers SET customer_name = 'Ashwini Deshmukh' WHERE customer_id = 25;
+UPDATE Customers SET customer_name = 'Ashok Tadte' WHERE customer_id = 29;
+UPDATE Customers SET customer_name = 'Yuvraj Gupta' WHERE customer_id = 31;
+UPDATE Customers SET customer_name = 'Manish Bhai Ashoka' WHERE customer_id = 35;
+UPDATE Customers SET customer_name = 'Maninder Bhagat' WHERE customer_id = 37;
+UPDATE Customers SET customer_name = 'Raju Yadav' WHERE customer_id = 39;
+UPDATE Customers SET customer_name = 'Rajesh Yadav' WHERE customer_id = 41;
+UPDATE Customers SET customer_name = 'Raj Kushwaha' WHERE customer_id = 45;
+UPDATE Customers SET customer_name = 'Rajkumar Kuswaha' WHERE customer_id = 49;
+UPDATE Customers SET customer_name = 'Sarita Shinde' WHERE customer_id = 50;
+UPDATE Customers SET customer_name = 'Ashwin Raghav' WHERE customer_id = 54;
+UPDATE Customers SET customer_name = 'Akash Patil' WHERE customer_id = 58;
+UPDATE Customers SET customer_name = 'Manish Lodhkar' WHERE customer_id = 61;
+UPDATE Customers SET customer_name = 'Pappu Jadhav' WHERE customer_id = 63;
+UPDATE Customers SET customer_name = 'Pramod Upnagar' WHERE customer_id = 64;
+UPDATE Customers SET customer_name = 'Ashok Bodke' WHERE customer_id = 65;
+UPDATE Customers SET customer_name = 'Sanju Linkroad' WHERE customer_id = 66;
+UPDATE Customers SET customer_name = 'Vishal Gupta' WHERE customer_id = 89;
+UPDATE Customers SET customer_name = 'Salman Qureshi' WHERE customer_id = 90;
+UPDATE Customers SET customer_name = 'Baban D.G.P. Nagar' WHERE customer_id = 93;
+UPDATE Customers SET customer_name = 'Pavan Satpur' WHERE customer_id = 95;
+UPDATE Customers SET customer_name = 'Ashok Satpur' WHERE customer_id = 97;
+UPDATE Customers SET customer_name = 'Ajeem Ansari' WHERE customer_id = 98;
+UPDATE Customers SET customer_name = 'Ramesh Gupta' WHERE customer_id = 99;
+UPDATE Customers SET customer_name = 'Dashrat Amte' WHERE customer_id = 112;
+UPDATE Customers SET customer_name = 'Rauf Seth' WHERE customer_id = 145;
+
+#views for data retrieval
+
+CREATE VIEW CustomerPurchaseSummary AS
+SELECT 
+    ds.customer_id, 
+    c.customer_name,
+    SUM(ds.quantity_sold_in_kg) AS total_quantity_sold_in_kg,
+    SUM(ds.quantity_sold_in_kg * ds.price_per_unit) AS total_spent
+FROM DailySales ds
+JOIN Customers c ON ds.customer_id = c.customer_id
+GROUP BY ds.customer_id, c.customer_name;
+
+CREATE VIEW OutstandingPayments AS
+SELECT 
+    p.customer_id,
+    c.customer_name,
+    SUM(p.amount_paid) AS total_paid,
+    SUM(ds.quantity_sold_in_kg * ds.price_per_unit) - SUM(p.amount_paid) AS balance_due
+FROM Payments p
+JOIN DailySales ds ON p.customer_id = ds.customer_id
+JOIN Customers c ON p.customer_id = c.customer_id
+GROUP BY p.customer_id, c.customer_name;
+
+CREATE VIEW DailySalesSummary AS
+SELECT 
+    ds.date,
+    SUM(ds.quantity_sold_in_kg) AS total_quantity_sold_in_kg,
+    SUM(ds.quantity_sold_in_kg * ds.price_per_unit) AS total_revenue
+FROM DailySales ds
+GROUP BY ds.date;
+
+CREATE VIEW CustomerPayments AS
+SELECT 
+    p.customer_id,
+    c.customer_name,
+    p.payment_date,
+    p.amount_paid,
+    p.payment_method
+FROM Payments p
+JOIN Customers c ON p.customer_id = c.customer_id;
+
+
+#view to get the details about payments made by the customer.
+select sum(amount_paid) from customerpayments where customer_name='rauf seth';
+
+#view to get daily sales summary
+select * from dailysalessummary;
+
+#view to get outstanding payments
+select* from outstandingpayments where customer_id=15;
+
+#view to get summary of customer's purchase
+select * from customerpurchasesummary;
